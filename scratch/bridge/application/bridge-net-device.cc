@@ -107,6 +107,12 @@ BridgeNetDevice::ReceiveFromDevice (Ptr<NetDevice> incomingPort, Ptr<const Packe
         {
           Learn (src48, incomingPort);
           m_rxCallback (this, packet, protocol, src);
+          if (m_buffer.find(dst) == m_buffer.end())
+          {
+            std::deque<Ptr<Packet>> queue;
+            m_buffer[dst48] = queue;
+          }
+          m_buffer[dst48].push_back(packet);
         }
       break;
 
@@ -124,7 +130,11 @@ BridgeNetDevice::ReceiveFromDevice (Ptr<NetDevice> incomingPort, Ptr<const Packe
         }
       else
         {
-          ForwardUnicast (incomingPort, packet, protocol, src48, dst48);
+          while (!m_buffer[dst48].empty())
+          {
+            ForwardUnicast (incomingPort, m_buffer[dst48].front(), protocol, src48, dst48);
+            m_buffer[dst48].pop_front();
+          }
         }
       break;
     }
