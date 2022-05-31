@@ -10,7 +10,7 @@ sudo docker pull jaepang/ns-3:team9
 
 ## Run
 
-## Attach Container
+### Attach Container
 ```sh
 docker run -it -v /path/to/repository:/root/ns-allinone-3.29/ns-3.29/scratch team9/ns-3:base bash
 ```
