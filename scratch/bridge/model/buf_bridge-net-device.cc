@@ -109,7 +109,7 @@ BufBridgeNetDevice::ReceiveFromDevice (Ptr<NetDevice> incomingPort, Ptr<const Pa
           Learn (src48, incomingPort);
           m_rxCallback (this, packet, protocol, src);
         }
-        NS_LOG_DEBUG (src48 << "->" <<  dst48 << ":" << m_buffer.size());
+        NS_LOG_DEBUG ("HOST" << src48 << "->" <<  dst48 << ":" << m_buffer.size());
       break;
 
     case PACKET_BROADCAST:
@@ -137,25 +137,30 @@ BufBridgeNetDevice::ReceiveFromDevice (Ptr<NetDevice> incomingPort, Ptr<const Pa
                 NS_LOG_DEBUG("Adding New Buffer [" << src48 << "]");
                 std::deque<Ptr<Packet>> queue;
                 m_buffer[src48] = queue;
+                NS_LOG_DEBUG("Adding Packet ["<< packet->GetUid() <<"] to " << src48 << " Buffer SIZE: " << m_buffer[src48].size());
+                m_buffer[src48].push_back(packet->Copy());
 
-            }
-            if (m_buffer[src48].size() != 0) 
-                m_buffer[src48].pop_front();
-            NS_LOG_DEBUG("Adding Packet ["<< packet->GetUid() <<"] to " << src48 << " Buffer");
-            m_buffer[src48].push_back(packet->Copy());
-            
-
-            // If there is dst buf
-            iter = m_buffer.find (dst48);
-            if (iter != m_buffer.end ()) {
-                NS_LOG_DEBUG("Found Dst Buffer [" << dst48 << "]");
-                NS_LOG_DEBUG("Sending Packet ["<< m_buffer[dst48].front()->GetUid() <<"] to " << src48);
-                ForwardUnicast (incomingPort, m_buffer[dst48].front(), protocol, src48, src48);
-            
-            }else {
                 ForwardUnicast (incomingPort, packet, protocol, src48, dst48);
+
+            }else {
+              if (m_buffer[src48].size() != 0) m_buffer[src48].pop_front();
+              NS_LOG_DEBUG("Adding Packet ["<< packet->GetUid() <<"] to " << src48 << " Buffer SIZE: " << m_buffer[src48].size());
+              m_buffer[src48].push_back(packet->Copy());
+              
+
+              iter = m_buffer.find (dst48);
+              if (iter != m_buffer.end ()) {
+                  // If there is dst buf
+                  NS_LOG_DEBUG("Found Dst Buffer [" << dst48 << "] and Packet is " <<m_buffer[dst48].front()->GetUid() );
+                  NS_LOG_DEBUG("Sending Packet ["<< m_buffer[dst48].front()->GetUid() <<"] to " << src48);
+                  ForwardReUnicast (incomingPort, m_buffer[dst48].front(), protocol, src48, dst48);
+                  // Ptr<NetDevice> devicePort = GetBridgePort(1);
+
+              }else {
+                  ForwardUnicast (incomingPort, packet, protocol, src48, dst48);
+              }
+              NS_LOG_DEBUG (src48 << "->" <<  dst48 << ":" << m_buffer.size());
             }
-            NS_LOG_DEBUG (src48 << "->" <<  dst48 << ":" << m_buffer.size());
 
         }
       break;
@@ -172,7 +177,9 @@ BufBridgeNetDevice::ForwardUnicast (Ptr<NetDevice> incomingPort, Ptr<const Packe
                                                        << ", src=" << src << ", dst=" << dst << ")");
 
   Learn (src, incomingPort);
+  
   Ptr<NetDevice> outPort = GetLearnedState (dst);
+  NS_LOG_DEBUG(incomingPort->GetAddress() << " VS " << outPort->GetAddress());
   if (outPort != NULL && outPort != incomingPort)
     {
       NS_LOG_LOGIC ("Learning bridge state says to use port `" << outPort->GetInstanceTypeId ().GetName () << "'");
@@ -197,6 +204,38 @@ BufBridgeNetDevice::ForwardUnicast (Ptr<NetDevice> incomingPort, Ptr<const Packe
     }
 }
 
+void
+BufBridgeNetDevice::ForwardReUnicast (Ptr<NetDevice> incomingPort, Ptr<const Packet> packet,
+                                 uint16_t protocol, Mac48Address src, Mac48Address dst)
+{
+  NS_LOG_FUNCTION_NOARGS ();
+  NS_LOG_DEBUG ("LearningBridgeForward (incomingPort=" << incomingPort->GetInstanceTypeId ().GetName ()
+                                                       << ", packet=" << packet << ", protocol="<<protocol
+                                                       << ", dst=" << dst << ")");
+
+  Ptr<NetDevice> outPort = GetLearnedState (dst);
+
+  if (outPort != NULL && outPort != incomingPort) {
+    NS_LOG_DEBUG("Sending " << m_address << " " <<  dst);
+    outPort->SendFrom (packet->Copy (), m_address, dst, protocol);
+  } else
+    {
+      NS_LOG_LOGIC ("No learned state: send through all ports");
+      for (std::vector< Ptr<NetDevice> >::iterator iter = m_ports.begin ();
+           iter != m_ports.end (); iter++)
+        {
+          Ptr<NetDevice> port = *iter;
+          if (port != incomingPort)
+            {
+              NS_LOG_LOGIC ("LearningBridgeForward (" << src << " => " << dst << "): " 
+                                                      << incomingPort->GetInstanceTypeId ().GetName ()
+                                                      << " --> " << port->GetInstanceTypeId ().GetName ()
+                                                      << " (UID " << packet->GetUid () << ").");
+              port->SendFrom (packet->Copy (), src, dst, protocol);
+            }
+        }
+    }
+}
 void
 BufBridgeNetDevice::ForwardBroadcast (Ptr<NetDevice> incomingPort, Ptr<const Packet> packet,
                                    uint16_t protocol, Mac48Address src, Mac48Address dst)
