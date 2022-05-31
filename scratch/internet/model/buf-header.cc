@@ -1,3 +1,5 @@
+// NetP Final
+
 #include "ns3/log.h"
 #include "buf-header.h"
 
@@ -15,6 +17,7 @@ namespace ns3
     {
         NS_LOG_FUNCTION (this);
         m_model = type;
+        return m_model;
     }
 
     TypeId
@@ -51,13 +54,11 @@ namespace ns3
     BufHeader::Serialize (Buffer::Iterator start) const
     {
         NS_LOG_FUNCTION (this << &start);
-        Buffer::Iterator i = start;
     }
     uint32_t
     BufHeader::Deserialize (Buffer::Iterator start)
     {
         NS_LOG_FUNCTION (this << &start);
-        Buffer::Iterator i = start;
         return GetSerializedSize ();
     }
 

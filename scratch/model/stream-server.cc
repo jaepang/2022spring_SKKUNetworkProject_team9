@@ -1,3 +1,5 @@
+// NetP Final
+
 #include "ns3/log.h"
 #include "ns3/ipv4-address.h"
 #include "ns3/nstime.h"
@@ -11,7 +13,7 @@
 #include "packet-loss-counter.h"
 
 #include "seq-ts-header.h"
-#include "buf-header.h"
+#include "ns3/buf-header.h"
 
 #include "stream-server.h"
 
@@ -242,7 +244,7 @@ StreamServer::Send(Address ip)
 
   if (m_sent < m_count)
     {
-      m_sendEvent = Simulator::Schedule (m_interval, &StreamServer::Send, this);
+      m_sendEvent = Simulator::Schedule (m_interval, &StreamServer::Send, this, ip);
     }
   
 }

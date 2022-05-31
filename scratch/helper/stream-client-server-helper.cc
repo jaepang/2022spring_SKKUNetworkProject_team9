@@ -1,8 +1,11 @@
+// NetP Final
+
 #include "stream-client-server-helper.h"
 #include "ns3/stream-server.h"
 #include "ns3/stream-client.h"
 #include "ns3/uinteger.h"
 #include "ns3/string.h"
+#include "ns3/names.h"
 
 namespace ns3 {
 
@@ -48,11 +51,6 @@ StreamServerHelper::Install (std::string nodeName) const
   return ApplicationContainer (InstallPriv (node));
 }
 
-Ptr<StreamServer>
-StreamServerHelper::GetServer (void)
-{
-  return m_server;
-}
 
 Ptr<Application>
 StreamServerHelper::InstallPriv (Ptr<Node> node) const

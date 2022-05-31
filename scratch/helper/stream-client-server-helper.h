@@ -1,3 +1,5 @@
+// NetP Final
+
 #ifndef STREAM_CLIENT_SERVER_HELPER
 #define STREAM_CLIENT_SERVER_HELPER
 
@@ -22,7 +24,6 @@ public:
     ApplicationContainer Install (NodeContainer c) const;
     ApplicationContainer Install (Ptr<Node> node) const;
     ApplicationContainer Install (std::string nodeName) const;
-    Ptr<StreamServer> GetServer(void);
 
 private:
     ObjectFactory m_factory;

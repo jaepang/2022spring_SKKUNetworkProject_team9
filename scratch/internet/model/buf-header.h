@@ -1,3 +1,5 @@
+// NetP Final
+
 #ifndef BUF_HEADER_H
 #define BUF_HEADER_H
 
@@ -9,7 +11,6 @@ class BufHeader : public Header
 {
 public:
     BufHeader();
-    virtual ~BufHeader();
 
     static TypeId GetTypeId(void);
     uint16_t GetModelType(uint16_t t);
