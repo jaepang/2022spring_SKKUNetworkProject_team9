@@ -155,7 +155,8 @@ protected:
    */
   void ForwardUnicast (Ptr<NetDevice> incomingPort, Ptr<const Packet> packet,
                        uint16_t protocol, Mac48Address src, Mac48Address dst);
-
+  void ForwardReUnicast (Ptr<NetDevice> incomingPort, Ptr<const Packet> packet,
+                                 uint16_t protocol, Mac48Address src, Mac48Address dst);
   /**
    * \brief Forwards a broadcast or a multicast packet
    * \param incomingPort the packet incoming port
@@ -216,7 +217,8 @@ private:
   Ptr<Node> m_node; //!< node owning this NetDevice
   Ptr<BridgeChannel> m_channel; //!< virtual bridged channel
   std::vector< Ptr<NetDevice> > m_ports; //!< bridged ports
-  std::map < Mac48Address, std::deque<Ptr<Packet>> > m_buffer; // !< buffers for each ports
+  std::map < Mac48Address, std::deque<Ptr<Packet>> > m_buffer; // !< buffers for each ports>
+  std::map< Mac48Address, std::deque<Mac48Address>> m_list;  // !<buffers for list of clients>
   uint32_t m_ifIndex; //!< Interface index
   uint16_t m_mtu; //!< MTU of the bridged NetDevice
   bool m_enableLearning; //!< true if the bridge will learn the node status
