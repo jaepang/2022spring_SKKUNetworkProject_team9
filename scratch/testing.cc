@@ -11,25 +11,26 @@
 using namespace ns3;
 using namespace std;
 
-NS_LOG_COMPONENT_DEFINE("TeamP");
+NS_LOG_COMPONENT_DEFINE("testing");
 
 uint32_t accumPackets = 0;
 static void
 PacketCount(Ptr<const Packet> p)
 {
     accumPackets += p->GetSize();
-	NS_LOG_LOGIC(accumPackets);
+	NS_LOG_LOGIC(Simulator::Now ().GetSeconds () << "\t" << accumPackets);
 }
 
 int  main(int argc, char*argv[])
 {
-    LogComponentEnable("TeamP", LOG_LEVEL_ALL);
+    LogComponentEnable("testing", LOG_LEVEL_ALL);
     // LogComponentEnable("CsmaNetDevice", LOG_LEVEL_ALL);
     // LogComponentEnable("BufBridgeNetDevice", LOG_LEVEL_DEBUG);
     // LogComponentEnable("BridgeNetDevice", LOG_LEVEL_ALL);
     // LogComponentEnable("PacketSink", LOG_LEVEL_ALL);
 	// LogComponentEnable("UdpEchoServerApplication", LOG_LEVEL_INFO);
     // LogComponentEnable("OnOffApplication", LOG_LEVEL_ALL);
+    
     NodeContainer terminals;
     terminals.Create(3);
 
@@ -92,11 +93,12 @@ int  main(int argc, char*argv[])
 
     csmaDevices.Get(2)->TraceConnectWithoutContext("MacTx", MakeCallback(&PacketCount));
 
-
     Simulator::Stop(Seconds(2));
 	Simulator::Run();
 	Simulator::Destroy();
 
+    double throughput = accumPackets * 512 * 8 / (2*1000000.0);
+    NS_LOG_LOGIC("Throughput: " << throughput << " Mbps");
 	return 0;
 }
 

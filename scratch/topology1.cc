@@ -113,6 +113,9 @@ int  main(int argc, char*argv[])
 	Simulator::Run();
 	Simulator::Destroy();
 
+    double throughput = accumPackets * 512 * 8 / (2*1000000.0);
+    NS_LOG_LOGIC("Throughput: " << throughput << " Mbps");
+
 	return 0;
 }
 
