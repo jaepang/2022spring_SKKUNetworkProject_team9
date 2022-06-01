@@ -1,6 +1,7 @@
 # 2022spring_SKKUNetworkProject_team9
 The purpose of this repository is to implement Youtube Streaming Application using ns-3 simulator.BY adding buffer to bridge node, we could reduce traffic congestion on streamer and bridge connection link. 
 
+<img src = "https://user-images.githubusercontent.com/56184924/171410383-c87f1a71-fa8a-47dd-94f8-e2466a224283.png" width="50%" height="50%">
 ## Prepare
 First, copy some files under below to specified path. 
 ```sh
