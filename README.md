@@ -1,7 +1,13 @@
 # 2022spring_SKKUNetworkProject_team9
-The purpose of this repository is to implement Youtube Streaming Application using ns-3 simulator.BY adding buffer to bridge node, we could reduce traffic congestion on streamer and bridge connection link. 
+The purpose of this repository is to implement Youtube Streaming Application using ns-3 simulator.BY adding buffer to bridge node, we could reduce traffic congestion on streamer and bridge connection link.
 
+## Overview
 <img src = "https://user-images.githubusercontent.com/56184924/171410383-c87f1a71-fa8a-47dd-94f8-e2466a224283.png" width="70%" height="70%">
+
+First, the client sends a connection request packet to the server. After that, the packet is delivered to the buffer bridge net device on the csm link. In the buffer bridge net device, the destination address of the packet is first checked to see if it is a buffer already formed in its net device. If the destination streamer is already the first server to be requested, the buffer bridge net device will form a new buffer. The buffer contains a list of m_buffers that store packets and clients that want to be connected in the m_list buffer. Thereafter, the buffer bridge net device sends a packet request to the streaming server.<br/>
+When the streaming server receives the request packet, the packet sends its own streaming packet to the on-ip address, where the packet is also forwarded to the buffer bridge net device via csm link. When a buffer bridge net device receives a packet from a registered server, it puts the packet in the m_buffer of the server buffer. Thereafter, the buffer bridge net device delivers the incoming packets to the clients registered in its m_list.<br/>
+In this way, we can reduce the traffic congestion of links connected between streaming servers and bridge devices. <br/>
+
 ## Prepare
 First, copy some files under below to specified path. 
 ```sh
