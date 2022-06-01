@@ -133,24 +133,25 @@ BufBridgeNetDevice::ReceiveFromDevice (Ptr<NetDevice> incomingPort, Ptr<const Pa
             for (const auto& x : m_buffer) {
                 NS_LOG_DEBUG("\t" << x.first);
             }
-            // TODO
             Ptr<Packet> copyPkt = packet->Copy();
 
             uint16_t mode = copyPkt->GetSize();
+            NS_LOG_INFO("MODE: " << mode);  // 현재는 size로 streamer인지(1024+28) client인지 구분(128+28) 
 
-            NS_LOG_INFO("MODE: " << mode);
             if (mode == 1024+28) {  // FROM SERVER
+                // 스트리머 버퍼에 현재 스트리밍 중인 패킷 추가
                 if (m_buffer[src48].size() != 0) m_buffer[src48].pop_front();
                 NS_LOG_DEBUG("Adding Packet ["<< packet->GetUid() <<"] to " << src48 << " Buffer SIZE: " << m_buffer[src48].size());
                 m_buffer[src48].push_back(packet->Copy());
 
+                // 해당 패킷을 등록된 각 클라들로 전송
                 for (Mac48Address it : m_list[src48]) { // Send it all registered client
                   ForwardReUnicast (incomingPort, m_buffer[src48].front(), protocol, src48, it);
                 }
 
             }else if(mode==128+28) { // FROM CLIENT
                 std::map<Mac48Address, std::deque<Ptr<Packet>> >::iterator iter = m_buffer.find (dst48);
-                if (iter == m_buffer.end ()) {
+                if (iter == m_buffer.end ()) {  // 클라의 목적지 주소가 새로운 스트리머이면 해당 스트리머 버퍼 형성
                   NS_LOG_DEBUG("Adding New Buffer [" << src48 << "]");
                   std::deque<Ptr<Packet>> queue;
                   std::deque<Mac48Address> queue2;
@@ -159,47 +160,13 @@ BufBridgeNetDevice::ReceiveFromDevice (Ptr<NetDevice> incomingPort, Ptr<const Pa
                 }
                 NS_LOG_DEBUG("Register Client");
                 std::map<Mac48Address, std::deque<Mac48Address> >::iterator iter_n = m_list.find (src48);
-                if (iter_n == m_list.end ()) {   // If not registered client, register
+                if (iter_n == m_list.end ()) {   // 등록되지 않은 클라면 해당 스트리머의 클라로 등록
                   m_list[dst48].push_back(src48);
                   ForwardUnicast (incomingPort, packet, protocol, src48, dst48);
                 }
             }else { // OTHER ELSE
               ForwardUnicast (incomingPort, packet, protocol, src48, dst48);
             }
-
-
-
-
-            // std::map<Mac48Address, std::deque<Ptr<Packet>> >::iterator iter = m_buffer.find (src48);
-            // if (iter == m_buffer.end ()) {
-            //     NS_LOG_DEBUG("Adding New Buffer [" << src48 << "]");
-            //     std::deque<Ptr<Packet>> queue;
-            //     m_buffer[src48] = queue;
-            //     NS_LOG_DEBUG("Adding Packet ["<< packet->GetUid() <<"] to " << src48 << " Buffer SIZE: " << m_buffer[src48].size());
-            //     m_buffer[src48].push_back(packet->Copy());
-
-            //     ForwardUnicast (incomingPort, packet, protocol, src48, dst48);
-
-            // }else {
-            //   if (m_buffer[src48].size() != 0) m_buffer[src48].pop_front();
-            //   NS_LOG_DEBUG("Adding Packet ["<< packet->GetUid() <<"] to " << src48 << " Buffer SIZE: " << m_buffer[src48].size());
-            //   m_buffer[src48].push_back(packet->Copy());
-              
-
-            //   iter = m_buffer.find (dst48);
-            //   if (iter != m_buffer.end ()) {
-            //       // If there is dst buf
-            //       NS_LOG_DEBUG("Found Dst Buffer [" << dst48 << "] and Packet is " <<m_buffer[dst48].front()->GetUid() );
-            //       NS_LOG_DEBUG("Sending Packet ["<< m_buffer[dst48].front()->GetUid() <<"] to " << src48);
-            //       ForwardReUnicast (incomingPort, m_buffer[dst48].front(), protocol, src48, dst48);
-            //       // Ptr<NetDevice> devicePort = GetBridgePort(1);
-
-            //   }else {
-            //       ForwardUnicast (incomingPort, packet, protocol, src48, dst48);
-            //   }
-            //   NS_LOG_DEBUG (src48 << "->" <<  dst48 << ":" << m_buffer.size());
-            // }
-
         }
       break;
     }
