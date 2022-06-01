@@ -24,14 +24,6 @@ You can easily excecute by pulling docker image to your local.
 sudo docker pull yunminjin2/ns-3:team9
 ```
 
-## Run
-```sh
-./waf --run <file-path> 
-```
-Example:
-```sh
-./waf --run testing.cc 
-```
 ### Attach Container
 ```sh
 docker run -it -v /path/to/repository/2022spring_SKKUNetworkProject_team9/scratch:/root/ns-allinone-3.29/ns-3.29/scratch team9/ns-3:base bash
