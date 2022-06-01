@@ -218,6 +218,7 @@ StreamServer::Send(Address ip)
   NS_LOG_FUNCTION (this);
   Address localAddress;
   BufHeader buf;
+  buf.SetModelType(2);
   m_socket->GetSockName (localAddress);
   SeqTsHeader seqTs;
   seqTs.SetSeq (m_sent);

@@ -13,7 +13,8 @@ public:
     BufHeader();
 
     static TypeId GetTypeId(void);
-    uint16_t GetModelType(uint16_t t);
+    void SetModelType(uint16_t type);
+    uint16_t GetModelType(void);
 
     virtual TypeId GetInstanceTypeId (void) const;
     virtual void Print (std::ostream &os) const;

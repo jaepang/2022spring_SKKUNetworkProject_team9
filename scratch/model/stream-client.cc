@@ -157,6 +157,7 @@ StreamClient::Send (void)
   NS_ASSERT (m_sendEvent.IsExpired ());
 
   BufHeader buf;
+  buf.SetModelType(1);
   SeqTsHeader seqTs;
   seqTs.SetSeq (m_sent);
   Ptr<Packet> p = Create<Packet> (m_size-(8+4)-(8+4)); // 8+4 : the size of the seqTs header

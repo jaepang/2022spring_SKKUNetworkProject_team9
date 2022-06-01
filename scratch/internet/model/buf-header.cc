@@ -12,11 +12,15 @@ namespace ns3
      : m_model(0)
     {}
 
-    uint16_t
-    BufHeader::GetModelType(uint16_t type)
+    void
+    BufHeader::SetModelType(uint16_t type)
     {
-        NS_LOG_FUNCTION (this);
         m_model = type;
+    }
+
+    uint16_t
+    BufHeader::GetModelType(void) const
+    {
         return m_model;
     }
 
