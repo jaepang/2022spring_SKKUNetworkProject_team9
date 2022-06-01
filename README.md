@@ -9,6 +9,7 @@ When the streaming server receives the request packet, the packet sends its own 
 In this way, we can reduce the traffic congestion of links connected between streaming servers and bridge devices. <br/>
 
 ## Prepare
+### Option 1 - Manually copy files from repository
 First, copy some files under below to specified path. 
 ```sh
 mv scratch/bridge/model/buf_bridge-net-device.cc ../src/bridge/model/buf_bridge-net-device.cc
@@ -40,15 +41,13 @@ mv scratch/wscript ..src/applications/wscript
 mv scratch/internet/wscript ../src/internet/wscript
 ```
 
-
-
-### Docker image
+### Option 2 - Pull Docker image
 You can easily excecute by pulling docker image to your local.
 ```sh
 sudo docker pull yunminjin2/ns-3:team9
 ```
 
-### Attach Container
+#### Run & Attach to Pulled image
 ```sh
 sudo docker run -it -v /path/to/repository/2022spring_SKKUNetworkProject_team9/scratch:/root/ns-allinone-3.29/ns-3.29/scratch team9/ns-3:base bash
 ```
