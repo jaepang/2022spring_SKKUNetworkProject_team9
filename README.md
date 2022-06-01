@@ -2,35 +2,35 @@
 The purpose of this repository is to implement Youtube Streaming Application using ns-3 simulator.BY adding buffer to bridge node, we could reduce traffic congestion on streamer and bridge connection link. 
 
 ## Prepare
-First, copy some files under below to specified path.
+First, copy some files under below to specified path. 
 ```sh
-cp scratch/bridge/model/buf_bridge-net-device.cc ../src/bridge/model/buf_bridge-net-device.cc
-cp scratch/brdige/model/buf_bridge-net-device.h ../src/bridge/model/buf_bridge-net-device.h
-cp scratch/bridge/helper/buf_bridge-helper.cc ../src/bridge/helper/buf_bridge-helper.cc
-cp scratch/bridge/helper/buf_bridge-helper.h ../src/bridge/helper/buf_bridge-helper.h
+mv scratch/bridge/model/buf_bridge-net-device.cc ../src/bridge/model/buf_bridge-net-device.cc
+mv scratch/brdige/model/buf_bridge-net-device.h ../src/bridge/model/buf_bridge-net-device.h
+mv scratch/bridge/helper/buf_bridge-helper.cc ../src/bridge/helper/buf_bridge-helper.cc
+mv scratch/bridge/helper/buf_bridge-helper.h ../src/bridge/helper/buf_bridge-helper.h
 ```
 ```sh
-cp scratch/model/streamer-client.cc ../src/applications/model/streamer-client.cc
-cp scratch/model/streamer-client.h ../src/applications/model/streamer-client.h
-cp scratch/model/streamer-server.cc ../src/applications/model/streamer-server.cc
-cp scratch/model/streamer-server.h ../src/applications/model/streamer-server.h
+mv scratch/model/streamer-client.cc ../src/applications/model/streamer-client.cc
+mv scratch/model/streamer-client.h ../src/applications/model/streamer-client.h
+mv scratch/model/streamer-server.cc ../src/applications/model/streamer-server.cc
+mv scratch/model/streamer-server.h ../src/applications/model/streamer-server.h
 ```
 ```sh
-cp scratch/helper/streamer-client-server-helper.cc ../src/applications/helper/streamer-client-server-helper.cc
-cp scratch/helper/streamer-client-server-helper.h ../src/applications/helper/streamer-client-server-helper.h
+mv scratch/helper/streamer-client-server-helper.cc ../src/applications/helper/streamer-client-server-helper.cc
+mv scratch/helper/streamer-client-server-helper.h ../src/applications/helper/streamer-client-server-helper.h
 ```
 ```sh
-cp scratch/internet/model/buf-header.cc ../src/internet/model/buf-header.cc
-cp scratch/internet/model/buf-header.h ../src/internet/model/buf-header.h
+mv scratch/internet/model/buf-header.cc ../src/internet/model/buf-header.cc
+mv scratch/internet/model/buf-header.h ../src/internet/model/buf-header.h
 ```
 ```sh
-cp scratch/testing.cc /scratch/testing.cc
-cp scratch/topology1.cc ../scratch/topology1.cc 
+mv scratch/testing.cc /scratch/testing.cc
+mv scratch/topology1.cc ../scratch/topology1.cc 
 ```
 ```sh
-cp scratch/bridge/wscript ../src/bridge/wscript
-cp scratch/wscript ..src/applications/wscript
-cp scratch/internet/wscript ../src/internet/wscript
+mv scratch/bridge/wscript ../src/bridge/wscript
+mv scratch/wscript ..src/applications/wscript
+mv scratch/internet/wscript ../src/internet/wscript
 ```
 
 
