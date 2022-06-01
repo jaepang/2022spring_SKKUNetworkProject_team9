@@ -222,7 +222,7 @@ BufBridgeNetDevice::ForwardReUnicast (Ptr<NetDevice> incomingPort, Ptr<const Pac
 
   if (outPort != NULL && outPort != incomingPort) {
     NS_LOG_DEBUG("Sending " << m_address << " " <<  dst);
-    outPort->SendFrom (packet->Copy (), m_address, dst, protocol);
+    outPort->SendFrom (packet->Copy (), m_address, dst, protocol); // m_address(bridge 주소)에서 클라로 전송
     
   } 
   else
