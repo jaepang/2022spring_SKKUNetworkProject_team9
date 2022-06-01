@@ -51,17 +51,17 @@ StreamServer::GetTypeId (void)
                    MakeUintegerAccessor (&StreamServer::GetPacketWindowSize,
                                          &StreamServer::SetPacketWindowSize),
                    MakeUintegerChecker<uint16_t> (8,256))
+    .AddAttribute ("PacketSize",
+                   "Size of packets generated. The minimum packet size is 12 bytes which is the size of the header carrying the sequence number and the time stamp.",
+                   UintegerValue (1024),
+                   MakeUintegerAccessor (&StreamServer::m_size),
+                   MakeUintegerChecker<uint32_t> (12,65507))
     .AddTraceSource ("Rx", "A packet has been received",
                      MakeTraceSourceAccessor (&StreamServer::m_rxTrace),
                      "ns3::Packet::TracedCallback")
     .AddTraceSource ("RxWithAddresses", "A packet has been received",
                      MakeTraceSourceAccessor (&StreamServer::m_rxTraceWithAddresses),
                      "ns3::Packet::TwoAddressTracedCallback")
-    .AddAttribute ("PacketSize",
-                   "Size of packets generated. The minimum packet size is 12 bytes which is the size of the header carrying the sequence number and the time stamp.",
-                   UintegerValue (1024),
-                   MakeUintegerAccessor (&StreamServer::m_size),
-                   MakeUintegerChecker<uint32_t> (12,65507))
   ;
   return tid;
 }
@@ -180,6 +180,7 @@ StreamServer::HandleRead (Ptr<Socket> socket)
           uint32_t currentSequenceNumber = seqTs.GetSeq ();
           if (InetSocketAddress::IsMatchingType (from))
             {
+              m_peerAddresses.push_back(InetSocketAddress::ConvertFrom (from).GetIpv4 ());
               NS_LOG_INFO ("TraceDelay: RX " << packet->GetSize () <<
                            " bytes from "<< InetSocketAddress::ConvertFrom (from).GetIpv4 () <<
                            " Sequence Number: " << currentSequenceNumber <<
@@ -201,16 +202,23 @@ StreamServer::HandleRead (Ptr<Socket> socket)
 
           m_lossCounter.NotifyReceived (currentSequenceNumber);
           m_received++;
+          // std::deque<Address>::iterator it = std::find(m_peerAddresses.begin(), m_peerAddresses.end(), from) ;
+          // if (it == m_peerAddresses.end())
+          // {
+          //   m_peerAddresses.push_back(from);
+          // }
+          m_sendEvent = Simulator::Schedule (Seconds (0.0), &StreamServer::Send, this, from);          
         }
     }
 }
 
 void
 StreamServer::Send(Address ip)
-{
+{ 
   NS_LOG_FUNCTION (this);
-
+  Address localAddress;
   BufHeader buf;
+  m_socket->GetSockName (localAddress);
   SeqTsHeader seqTs;
   seqTs.SetSeq (m_sent);
   Ptr<Packet> p = Create<Packet> (m_size-(8+4)-(8+4)); // 8+4 : the size of the seqTs header
@@ -218,6 +226,7 @@ StreamServer::Send(Address ip)
   p->AddHeader (buf);
 
   std::stringstream peerAddressStringStream;
+
   if (Ipv4Address::IsMatchingType (ip))
     {
       peerAddressStringStream << Ipv4Address::ConvertFrom (ip);
@@ -227,20 +236,7 @@ StreamServer::Send(Address ip)
       peerAddressStringStream << Ipv6Address::ConvertFrom (ip);
     }
 
-  if ((m_socket->Send (p)) >= 0)
-    {
-      ++m_sent;
-      NS_LOG_INFO ("TraceDelay TX " << m_size << " bytes to "
-                                    << peerAddressStringStream.str () << " Uid: "
-                                    << p->GetUid () << " Time: "
-                                    << (Simulator::Now ()).GetSeconds ());
-
-    }
-  else
-    {
-      NS_LOG_INFO ("Error while sending " << m_size << " bytes to "
-                                          << peerAddressStringStream.str ());
-    }
+  m_socket->SendTo (p, 0, ip);
 
   if (m_sent < m_count)
     {

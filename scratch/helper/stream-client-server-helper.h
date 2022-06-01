@@ -19,20 +19,21 @@ class StreamServerHelper
 public:
     StreamServerHelper();
     StreamServerHelper(uint16_t port);
-
+    
+    Ptr<StreamServer> GetServer();
     void SetAttribute(std::string name, const AttributeValue &value);
-    ApplicationContainer Install (NodeContainer c) const;
-    ApplicationContainer Install (Ptr<Node> node) const;
-    ApplicationContainer Install (std::string nodeName) const;
+    ApplicationContainer Install (NodeContainer c) ;
 
 private:
     ObjectFactory m_factory;
+    Ptr<StreamServer> m_server;
     Ptr<Application> InstallPriv (Ptr<Node> node) const;
 };
 
 
 class StreamClientHelper
 {
+public:
     StreamClientHelper();
     StreamClientHelper(Address ip, uint16_t port);
     StreamClientHelper(Address addr);
