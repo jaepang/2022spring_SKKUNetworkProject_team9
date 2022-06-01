@@ -19,6 +19,9 @@ StreamServerHelper::StreamServerHelper (uint16_t port)
   m_factory.SetTypeId (StreamServer::GetTypeId ());
   SetAttribute ("Port", UintegerValue (port));
 }
+Ptr<StreamServer> StreamServerHelper::GetServer(void) {
+  return m_server;
+}
 
 void
 StreamServerHelper::SetAttribute (std::string name, const AttributeValue &value)
@@ -27,28 +30,19 @@ StreamServerHelper::SetAttribute (std::string name, const AttributeValue &value)
 }
 
 ApplicationContainer
-StreamServerHelper::Install (NodeContainer c) const
+StreamServerHelper::Install (NodeContainer c)
 {
   ApplicationContainer apps;
   for (NodeContainer::Iterator i = c.Begin (); i != c.End (); ++i)
     {
+      Ptr<Node> node = *i;
+
+      m_server = m_factory.Create<StreamServer> ();
+      // node->AddApplication (m_server);
       apps.Add (InstallPriv (*i));
     }
 
   return apps;
-}
-
-ApplicationContainer
-StreamServerHelper::Install (Ptr<Node> node) const
-{
-  return ApplicationContainer (InstallPriv (node));
-}
-
-ApplicationContainer
-StreamServerHelper::Install (std::string nodeName) const
-{
-  Ptr<Node> node = Names::Find<Node> (nodeName);
-  return ApplicationContainer (InstallPriv (node));
 }
 
 
@@ -78,7 +72,6 @@ StreamClientHelper::StreamClientHelper (Address address)
   m_factory.SetTypeId (StreamClient::GetTypeId ());
   SetAttribute ("RemoteAddress", AddressValue (address));
 }
-
 void
 StreamClientHelper::SetAttribute (std::string name, const AttributeValue &value)
 {

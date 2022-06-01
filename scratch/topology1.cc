@@ -11,7 +11,7 @@
 using namespace ns3;
 using namespace std;
 
-NS_LOG_COMPONENT_DEFINE("TeamP");
+NS_LOG_COMPONENT_DEFINE("topology1");
 
 uint32_t accumPackets = 0;
 static void
@@ -23,7 +23,7 @@ PacketCount(Ptr<const Packet> p)
 
 int  main(int argc, char*argv[])
 {
-    LogComponentEnable("TeamP", LOG_LEVEL_ALL);
+    LogComponentEnable("topology1", LOG_LEVEL_ALL);
     // LogComponentEnable("CsmaNetDevice", LOG_LEVEL_ALL);
     // LogComponentEnable("BufBridgeNetDevice", LOG_LEVEL_DEBUG);
     // LogComponentEnable("BridgeNetDevice", LOG_LEVEL_ALL);
@@ -52,7 +52,6 @@ int  main(int argc, char*argv[])
     }
     Ptr<Node> switchNode = bridgeSwitch.Get(0);
     BufBridgeHelper bridge; 
-    // bridge.SetDeviceAttribute("EnableLearning", BooleanValue(false));
     bridge.Install(switchNode, switchDevices);
 
 	InternetStackHelper stack;
@@ -66,54 +65,48 @@ int  main(int argc, char*argv[])
 
     // Application executing
 
-    OnOffHelper onoff1("ns3::UdpSocketFactory", Address(InetSocketAddress(interfaces.GetAddress(0), port)));
-    onoff1.SetAttribute("OnTime", StringValue("ns3::ConstantRandomVariable[Constant=5]"));
-    onoff1.SetAttribute("OffTime", StringValue("ns3::ConstantRandomVariable[Constant=0]"));
-    onoff1.SetAttribute("DataRate", DataRateValue(250000));
+    StreamClientHelper clientHelper0(interfaces.GetAddress(3), port);
+    clientHelper0.SetAttribute("MaxPackets", UintegerValue(100));
+    clientHelper0.SetAttribute("Interval", TimeValue(Seconds(0.5)));
+    clientHelper0.SetAttribute("PacketSize", UintegerValue(128));
+    ApplicationContainer clientApp0 = clientHelper0.Install(terminals.Get(0));
+    clientApp0.Start(Seconds(0.8)); 
 
-    ApplicationContainer onoffApp1 = onoff1.Install(terminals.Get(3));
-    onoffApp1.Start(Seconds(1.0));
-    onoffApp1.Stop(Seconds(16.0));
+    StreamClientHelper clientHelper1(interfaces.GetAddress(3), port);
+    clientHelper1.SetAttribute("MaxPackets", UintegerValue(100));
+    clientHelper1.SetAttribute("Interval", TimeValue(Seconds(0.5)));
+    clientHelper1.SetAttribute("PacketSize", UintegerValue(128));
+    ApplicationContainer clientApp1 = clientHelper1.Install(terminals.Get(1));
+    clientApp1.Start(Seconds(0.9)); 
 
-    OnOffHelper onoff2("ns3::UdpSocketFactory", Address(InetSocketAddress(interfaces.GetAddress(1), port)));
-    onoff2.SetAttribute("OnTime", StringValue("ns3::ConstantRandomVariable[Constant=5]"));
-    onoff2.SetAttribute("OffTime", StringValue("ns3::ConstantRandomVariable[Constant=0]"));
-    onoff2.SetAttribute("DataRate", DataRateValue(250000));
 
-    ApplicationContainer onoffApp2 = onoff2.Install(terminals.Get(3));
-    onoffApp2.Start(Seconds(1.2));
-    onoffApp2.Stop(Seconds(16.0));
+    StreamClientHelper clientHelper2(interfaces.GetAddress(3), port);
+    clientHelper2.SetAttribute("MaxPackets", UintegerValue(100));
+    clientHelper2.SetAttribute("Interval", TimeValue(Seconds(0.5)));
+    clientHelper2.SetAttribute("PacketSize", UintegerValue(128));
+    ApplicationContainer clientApp2 = clientHelper2.Install(terminals.Get(2));
+    clientApp2.Start(Seconds(0.9)); 
 
-    OnOffHelper onoff3("ns3::UdpSocketFactory", Address(InetSocketAddress(interfaces.GetAddress(2), port)));
-    onoff3.SetAttribute("OnTime", StringValue("ns3::ConstantRandomVariable[Constant=5]"));
-    onoff3.SetAttribute("OffTime", StringValue("ns3::ConstantRandomVariable[Constant=0]"));
-    onoff3.SetAttribute("DataRate", DataRateValue(250000));
 
-    ApplicationContainer onoffApp3 = onoff3.Install(terminals.Get(3));
-    onoffApp3.Start(Seconds(1.4));
-    onoffApp3.Stop(Seconds(16.0));
-
-    PacketSinkHelper sink1("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address::GetAny(), port)));
-    ApplicationContainer sinkApp1 = sink1.Install(terminals.Get(0));
-    sinkApp1.Start(Seconds(1.0)); 
-
-    PacketSinkHelper sink2("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address::GetAny(), port)));
-    ApplicationContainer sinkApp2 = sink2.Install(terminals.Get(1));
-    sinkApp2.Start(Seconds(1.0)); 
-
-    PacketSinkHelper sink3("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address::GetAny(), port)));
-    ApplicationContainer sinkApp3 = sink3.Install(terminals.Get(2));
-    sinkApp3.Start(Seconds(1.0)); 
+    // =========================
+    StreamServerHelper streamerHelper1(9);
+    streamerHelper1.SetAttribute("MaxPackets", UintegerValue(1000));
+    streamerHelper1.SetAttribute("Interval", TimeValue(Seconds(0.01)));
+    streamerHelper1.SetAttribute("PacketSize", UintegerValue(1024));
+    ApplicationContainer streamerApp1 = streamerHelper1.Install(terminals.Get(3));
+    streamerApp1.Start(Seconds(0.0)); 
     ////////////////////////////////////////////////////////////////////////
 
     csmaDevices.Get(3)->TraceConnectWithoutContext("MacTx", MakeCallback(&PacketCount));
+    // csmaDevices.Get(1)->TraceConnectWithoutContext("MacTx", MakeCallback(&PacketCount));
+
 
 
     Simulator::Stop(Seconds(2));
 	Simulator::Run();
 	Simulator::Destroy();
 
-    double throughput = accumPackets * 512 * 8 / (2*1000000.0);
+    double throughput = accumPackets * 512 * 8 / (1000000.0);
     NS_LOG_LOGIC("Throughput: " << throughput << " Mbps");
 
 	return 0;

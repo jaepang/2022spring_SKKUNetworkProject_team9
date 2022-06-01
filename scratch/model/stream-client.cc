@@ -194,4 +194,4 @@ StreamClient::Send (void)
     }
 }
 
-} // Namespace ns3
+} // Namespace ns3s

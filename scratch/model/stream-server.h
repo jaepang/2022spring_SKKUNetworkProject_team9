@@ -9,7 +9,8 @@
 #include "ns3/address.h"
 #include "ns3/traced-callback.h"
 #include "packet-loss-counter.h"
-
+#include <queue>
+#include <algorithm>
 namespace ns3 {
 
 class StreamServer : public Application
@@ -33,11 +34,11 @@ private:
 
     void HandleRead(Ptr<Socket> socket);
     void Send(Address ip);
-
     uint32_t    m_size;
     uint32_t m_count;
     Time m_interval;
     uint16_t m_port;
+    std::deque<Address> m_peerAddresses;
     Ptr<Socket> m_socket;
     Ptr<Socket> m_socket6;
     uint64_t m_received;

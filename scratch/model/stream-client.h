@@ -40,6 +40,7 @@ private:
     uint32_t    m_count;
     Time        m_interval;
     uint32_t    m_size;
+    uint32_t    mode;
     uint32_t    m_sent;
     EventId     m_sendEvent;
 };
