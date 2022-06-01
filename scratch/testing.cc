@@ -11,7 +11,7 @@
 using namespace ns3;
 using namespace std;
 
-NS_LOG_COMPONENT_DEFINE("teamProj");
+NS_LOG_COMPONENT_DEFINE("testing");
 
 uint32_t accumPackets = 0;
 static void
@@ -23,7 +23,7 @@ PacketCount(Ptr<const Packet> p)
 
 int  main(int argc, char*argv[])
 {
-    LogComponentEnable("teamProj", LOG_LEVEL_ALL);
+    LogComponentEnable("testing", LOG_LEVEL_ALL);
     // LogComponentEnable("StreamClient", LOG_LEVEL_ALL);
     // LogComponentEnable("StreamServer", LOG_LEVEL_ALL);
     // LogComponentEnable("BufBridgeNetDevice", LOG_LEVEL_ALL);
