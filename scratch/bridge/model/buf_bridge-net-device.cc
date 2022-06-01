@@ -23,7 +23,7 @@
 #include "ns3/boolean.h"
 #include "ns3/simulator.h"
 #include "ns3/uinteger.h"
-
+#include "ns3/buf-header.h"
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE ("BufBridgeNetDevice");
@@ -95,6 +95,7 @@ BufBridgeNetDevice::ReceiveFromDevice (Ptr<NetDevice> incomingPort, Ptr<const Pa
   Mac48Address src48 = Mac48Address::ConvertFrom (src);
   Mac48Address dst48 = Mac48Address::ConvertFrom (dst);
 
+  NS_LOG_DEBUG ("PACKET INFO " << src48 << "->" <<  dst48);
   if (!m_promiscRxCallback.IsNull ())
     {
       m_promiscRxCallback (this, packet, protocol, src, dst, packetType);
@@ -132,35 +133,72 @@ BufBridgeNetDevice::ReceiveFromDevice (Ptr<NetDevice> incomingPort, Ptr<const Pa
             for (const auto& x : m_buffer) {
                 NS_LOG_DEBUG("\t" << x.first);
             }
-            std::map<Mac48Address, std::deque<Ptr<Packet>> >::iterator iter = m_buffer.find (src48);
-            if (iter == m_buffer.end ()) {
-                NS_LOG_DEBUG("Adding New Buffer [" << src48 << "]");
-                std::deque<Ptr<Packet>> queue;
-                m_buffer[src48] = queue;
+            // TODO
+            Ptr<Packet> copyPkt = packet->Copy();
+
+            uint16_t mode = copyPkt->GetSize();
+
+            NS_LOG_INFO("MODE: " << mode);
+            if (mode == 1024+28) {  // FROM SERVER
+                if (m_buffer[src48].size() != 0) m_buffer[src48].pop_front();
                 NS_LOG_DEBUG("Adding Packet ["<< packet->GetUid() <<"] to " << src48 << " Buffer SIZE: " << m_buffer[src48].size());
                 m_buffer[src48].push_back(packet->Copy());
 
-                ForwardUnicast (incomingPort, packet, protocol, src48, dst48);
+                for (Mac48Address it : m_list[src48]) { // Send it all registered client
+                  ForwardReUnicast (incomingPort, m_buffer[src48].front(), protocol, src48, it);
+                }
 
-            }else {
-              if (m_buffer[src48].size() != 0) m_buffer[src48].pop_front();
-              NS_LOG_DEBUG("Adding Packet ["<< packet->GetUid() <<"] to " << src48 << " Buffer SIZE: " << m_buffer[src48].size());
-              m_buffer[src48].push_back(packet->Copy());
+            }else if(mode==128+28) { // FROM CLIENT
+                std::map<Mac48Address, std::deque<Ptr<Packet>> >::iterator iter = m_buffer.find (dst48);
+                if (iter == m_buffer.end ()) {
+                  NS_LOG_DEBUG("Adding New Buffer [" << src48 << "]");
+                  std::deque<Ptr<Packet>> queue;
+                  std::deque<Mac48Address> queue2;
+                  m_buffer[dst48] = queue;
+                  m_list[dst48] = queue2;
+                }
+                NS_LOG_DEBUG("Register Client");
+                std::map<Mac48Address, std::deque<Mac48Address> >::iterator iter_n = m_list.find (src48);
+                if (iter_n == m_list.end ()) {   // If not registered client, register
+                  m_list[dst48].push_back(src48);
+                  ForwardUnicast (incomingPort, packet, protocol, src48, dst48);
+                }
+            }else { // OTHER ELSE
+              ForwardUnicast (incomingPort, packet, protocol, src48, dst48);
+            }
+
+
+
+
+            // std::map<Mac48Address, std::deque<Ptr<Packet>> >::iterator iter = m_buffer.find (src48);
+            // if (iter == m_buffer.end ()) {
+            //     NS_LOG_DEBUG("Adding New Buffer [" << src48 << "]");
+            //     std::deque<Ptr<Packet>> queue;
+            //     m_buffer[src48] = queue;
+            //     NS_LOG_DEBUG("Adding Packet ["<< packet->GetUid() <<"] to " << src48 << " Buffer SIZE: " << m_buffer[src48].size());
+            //     m_buffer[src48].push_back(packet->Copy());
+
+            //     ForwardUnicast (incomingPort, packet, protocol, src48, dst48);
+
+            // }else {
+            //   if (m_buffer[src48].size() != 0) m_buffer[src48].pop_front();
+            //   NS_LOG_DEBUG("Adding Packet ["<< packet->GetUid() <<"] to " << src48 << " Buffer SIZE: " << m_buffer[src48].size());
+            //   m_buffer[src48].push_back(packet->Copy());
               
 
-              iter = m_buffer.find (dst48);
-              if (iter != m_buffer.end ()) {
-                  // If there is dst buf
-                  NS_LOG_DEBUG("Found Dst Buffer [" << dst48 << "] and Packet is " <<m_buffer[dst48].front()->GetUid() );
-                  NS_LOG_DEBUG("Sending Packet ["<< m_buffer[dst48].front()->GetUid() <<"] to " << src48);
-                  ForwardReUnicast (incomingPort, m_buffer[dst48].front(), protocol, src48, dst48);
-                  // Ptr<NetDevice> devicePort = GetBridgePort(1);
+            //   iter = m_buffer.find (dst48);
+            //   if (iter != m_buffer.end ()) {
+            //       // If there is dst buf
+            //       NS_LOG_DEBUG("Found Dst Buffer [" << dst48 << "] and Packet is " <<m_buffer[dst48].front()->GetUid() );
+            //       NS_LOG_DEBUG("Sending Packet ["<< m_buffer[dst48].front()->GetUid() <<"] to " << src48);
+            //       ForwardReUnicast (incomingPort, m_buffer[dst48].front(), protocol, src48, dst48);
+            //       // Ptr<NetDevice> devicePort = GetBridgePort(1);
 
-              }else {
-                  ForwardUnicast (incomingPort, packet, protocol, src48, dst48);
-              }
-              NS_LOG_DEBUG (src48 << "->" <<  dst48 << ":" << m_buffer.size());
-            }
+            //   }else {
+            //       ForwardUnicast (incomingPort, packet, protocol, src48, dst48);
+            //   }
+            //   NS_LOG_DEBUG (src48 << "->" <<  dst48 << ":" << m_buffer.size());
+            // }
 
         }
       break;
@@ -218,7 +256,9 @@ BufBridgeNetDevice::ForwardReUnicast (Ptr<NetDevice> incomingPort, Ptr<const Pac
   if (outPort != NULL && outPort != incomingPort) {
     NS_LOG_DEBUG("Sending " << m_address << " " <<  dst);
     outPort->SendFrom (packet->Copy (), m_address, dst, protocol);
-  } else
+    
+  } 
+  else
     {
       NS_LOG_LOGIC ("No learned state: send through all ports");
       for (std::vector< Ptr<NetDevice> >::iterator iter = m_ports.begin ();
